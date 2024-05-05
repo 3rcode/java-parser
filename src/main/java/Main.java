@@ -47,23 +47,22 @@ public class Main {
         parser.setSource(FileProcessor.read(new File(filePath)).toCharArray());
         CompilationUnit cu = (CompilationUnit) parser.createAST(null);
         int numClass = cu.types().size();
-        String[] filePathParts = filePath.split("/");
-        String fileName = filePathParts[filePathParts.length - 1];
         TypeDeclaration targetClass;
         if (numClass > 0) {
             if (numClass >= 2) {
                 logger.log(Level.INFO, "The file has more than one class");
+                return "<multi_class>";
             }
             try {
                 targetClass = (TypeDeclaration) cu.types().get(0);
             } catch (Exception e) {
                 logger.log(Level.INFO, "The file has enum first");
-                return "<no_class>";
+                return "<enum>";
             }
             ITypeBinding superClass = targetClass.resolveBinding().getSuperclass();
             if (superClass == null) {
                 logger.log(Level.INFO, "The class is java.lang.Object class");
-                return "<no_class>";
+                return "<object>";
             }
             String superClassName = targetClass.resolveBinding().getSuperclass().getQualifiedName();
             if (superClassName.isEmpty() || superClassName.equals("java.lang.Object") || superClassName.equals("null")) {
