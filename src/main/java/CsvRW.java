@@ -1,8 +1,10 @@
 import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -40,5 +42,26 @@ public class CsvRW {
             logger.log(Level.SEVERE, e.getMessage());
         }
         return list;
+    }
+
+    public void write(final Path path, ArrayList<Record> dataset) {
+        try (final CSVPrinter printer = CSVFormat.RFC4180.withHeader("proj_name", "relative_path", "class_name", "func_name", "masked_class", "func_body", "len_input", "len_output", "total", "inherit_elements").print(path, StandardCharsets.UTF_8))
+        {
+            for (Record aRecord : dataset) {
+                printer.printRecord(aRecord.proj_name,
+                        aRecord.relative_path,
+                        aRecord.class_name,
+                        aRecord.func_name,
+                        aRecord.masked_class,
+                        aRecord.func_body,
+                        aRecord.len_input,
+                        aRecord.len_output,
+                        aRecord.total,
+                        aRecord.inherit_elements
+                );
+            }
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Encounter error while writing csv file");
+        }
     }
 }

@@ -1,11 +1,11 @@
 import flute.config.Config;
 import flute.utils.file_processing.FileProcessor;
-import me.tongfei.progressbar.ProgressBar;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
+import me.tongfei.progressbar.ProgressBar;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -18,10 +18,14 @@ import java.util.logging.Logger;
 
 public class Main {
     private final static Logger logger = Logger.getLogger("extract-inherit-elements");
-        private static ArrayList<Record> readCsv(String filePath) {
-            CsvRW reader = new CsvRW();
-            return reader.read(Path.of(filePath));
-        }
+    private static ArrayList<Record> readCsv(String filePath) {
+        CsvRW reader = new CsvRW();
+        return reader.read(Path.of(filePath));
+    }
+    private static void storeCsv(String filePath, ArrayList<Record> dataset) {
+        CsvRW writer = new CsvRW();
+        writer.write(Path.of(filePath), dataset);
+    }
 
     private static ASTParser newParser(String projectName, String projectDir) {
         Config.autoConfigure(projectName, projectDir);
@@ -44,8 +48,7 @@ public class Main {
         int numClass = cu.types().size();
         String[] filePathParts = filePath.split("/");
         String fileName = filePathParts[filePathParts.length - 1];
-        String className = fileName.replace(".java", "");
-        TypeDeclaration targetClass = null;
+        TypeDeclaration targetClass;
         if (numClass > 0) {
             if (numClass >= 2) {
                 logger.log(Level.INFO, "The file " + filePath + " has more than one class");
@@ -72,12 +75,13 @@ public class Main {
         }
     }
 
-
     public static void main(String[] args) {
         Config.JAVAFX_DIR = "/home/lvdthieu/Token";
-        String csvFile = args[0];
+        String inputFile = args[0];
         String baseDir = args[1];
-        ArrayList<Record> dataset = readCsv("/home/lvdthieu/iluwatar.csv");
+        String outputFile = args[2];
+
+        ArrayList<Record> dataset = readCsv(inputFile);
         System.out.println("Read file done");
         List<String> inherit_elements = new ArrayList<>(dataset.size());
         for (Record record : ProgressBar.wrap(dataset, "Extracting")) {
@@ -98,10 +102,10 @@ public class Main {
         }
         System.out.println("No class: " + countNoClass);
         System.out.println("No super class: " + countNoSuperClass);
-//        for (int i = 0; i < dataset.size(); i++) {
-//            dataset.get(i).setInherit_elements(inherit_elements.get(i));
-//        }
-
+        for (int i = 0; i < dataset.size(); i++) {
+            dataset.get(i).setInherit_elements(inherit_elements.get(i));
+        }
+        storeCsv(outputFile, dataset);
     }
 }
 
