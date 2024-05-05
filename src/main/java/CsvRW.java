@@ -22,7 +22,7 @@ public class CsvRW {
 
             // Read CSV file
             BufferedReader reader = Files.newBufferedReader(path);
-            Iterable < CSVRecord > records = CSVFormat.RFC4180.withFirstRecordAsHeader().parse( reader );
+            Iterable < CSVRecord > records = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(reader);
             for ( CSVRecord record : records )
             {
                 String proj_name = record.get("proj_name");

@@ -3,6 +3,7 @@ import flute.utils.file_processing.FileProcessor;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 import me.tongfei.progressbar.ProgressBar;
@@ -51,16 +52,21 @@ public class Main {
         TypeDeclaration targetClass;
         if (numClass > 0) {
             if (numClass >= 2) {
-                logger.log(Level.INFO, "The file " + filePath + " has more than one class");
+                logger.log(Level.INFO, "The file has more than one class");
             }
             try {
                 targetClass = (TypeDeclaration) cu.types().get(0);
             } catch (Exception e) {
-                logger.log(Level.SEVERE, "The file " + filePath + "has no class");
+                logger.log(Level.INFO, "The file has enum first");
                 return "<no_class>";
             }
-            String superClass = targetClass.resolveBinding().getSuperclass().getQualifiedName();
-            if (superClass.isEmpty() || superClass.equals("java.lang.Object")) {
+            ITypeBinding superClass = targetClass.resolveBinding().getSuperclass();
+            if (superClass == null) {
+                logger.log(Level.INFO, "The class is java.lang.Object class");
+                return "<no_class>";
+            }
+            String superClassName = targetClass.resolveBinding().getSuperclass().getQualifiedName();
+            if (superClassName.isEmpty() || superClassName.equals("java.lang.Object") || superClassName.equals("null")) {
 //                logger.log(Level.INFO, "The class in file " + filePath + " has no super class");
                 return "<no_super_class>";
             } else {
@@ -70,7 +76,7 @@ public class Main {
                 return "<methods>" + String.join(",", methods) + "<variables>" + String.join(",", vars);
             }
         } else {
-            logger.log(Level.SEVERE, "The file " + filePath + " has no class");
+            logger.log(Level.INFO, "The file has no class");
             return "<no_class>";
         }
     }
