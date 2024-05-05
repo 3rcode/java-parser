@@ -1,11 +1,11 @@
 import flute.config.Config;
 import flute.utils.file_processing.FileProcessor;
-import me.tongfei.progressbar.ProgressBar;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
+import me.tongfei.progressbar.ProgressBar;
 
 import java.io.File;
 import java.nio.file.Path;
