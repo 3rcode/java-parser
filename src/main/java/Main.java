@@ -59,12 +59,17 @@ public class Main {
                 logger.log(Level.INFO, "The file has enum first");
                 return "<enum>";
             }
-            ITypeBinding superClass = targetClass.resolveBinding().getSuperclass();
+            ITypeBinding binding = targetClass.resolveBinding();
+            if (binding == null) {
+                logger.log(Level.INFO, "The class cannot be resolved binding");
+                return "<binding>";
+            }
+            ITypeBinding superClass = binding.getSuperclass();
             if (superClass == null) {
                 logger.log(Level.INFO, "The class is java.lang.Object class");
                 return "<object>";
             }
-            String superClassName = targetClass.resolveBinding().getSuperclass().getQualifiedName();
+            String superClassName = superClass.getQualifiedName();
             if (superClassName.isEmpty() || superClassName.equals("java.lang.Object") || superClassName.equals("null")) {
 //                logger.log(Level.INFO, "The class in file " + filePath + " has no super class");
                 return "<no_super_class>";
