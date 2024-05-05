@@ -1,5 +1,6 @@
 import flute.config.Config;
 import flute.utils.file_processing.FileProcessor;
+import me.tongfei.progressbar.ProgressBar;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -77,8 +78,9 @@ public class Main {
         String csvFile = args[0];
         String baseDir = args[1];
         ArrayList<Record> dataset = readCsv("/home/lvdthieu/iluwatar.csv");
+        System.out.println("Read file done");
         List<String> inherit_elements = new ArrayList<>(dataset.size());
-        for (Record record : dataset) {
+        for (Record record : ProgressBar.wrap(dataset, "Extracting")) {
             String projName = record.proj_name;
             String projDir = baseDir + "/" + projName;
             String filePath = projDir + "/" + record.relative_path;
