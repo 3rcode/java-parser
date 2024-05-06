@@ -51,7 +51,6 @@ public class Main {
         if (numClass > 0) {
             if (numClass >= 2) {
                 logger.log(Level.INFO, "The file has more than one class");
-                return "<multi_class>";
             }
             try {
                 targetClass = (TypeDeclaration) cu.types().get(0);
