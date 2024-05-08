@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 public class CsvRW {
     private static final Logger logger = Logger.getLogger("csv");
-    public ArrayList<Record> read(Path path) {
+    public ArrayList<Record> read(Path path, String task) {
         ArrayList<Record> list = new ArrayList<>();
         try {
             // Prepare list.
@@ -34,8 +34,15 @@ public class CsvRW {
                 int len_input = Integer.parseInt(record.get("len_input"));
                 int len_output = Integer.parseInt(record.get("len_output"));
                 int total = Integer.parseInt(record.get("total"));
-                Record aRecord = new Record(proj_name, relative_path, class_name, func_name, masked_class, func_body, len_input, len_output, total);
-                list.add(aRecord);
+                if (task.equals("<inherit_elements>")) {
+                    Record aRecord = new Record(proj_name, relative_path, class_name, func_name, masked_class, func_body, len_input, len_output, total);
+                    list.add(aRecord);
+                } else if (task.equals("<method_qualified_names>")) {
+                    String inherit_element = record.get("inherit_elements");
+                    Record aRecord = new Record(proj_name, relative_path, class_name, func_name, masked_class, func_body, len_input, len_input, total, inherit_element);
+                    list.add(aRecord);
+                }
+
             }
         } catch (IOException e)
         {
@@ -44,7 +51,7 @@ public class CsvRW {
         return list;
     }
 
-    public void write(final Path path, ArrayList<Record> dataset) {
+    public void write(final Path path, ArrayList<Record> dataset, String task) {
         try (final CSVPrinter printer = CSVFormat.RFC4180.withHeader("proj_name", "relative_path", "class_name", "func_name", "masked_class", "func_body", "len_input", "len_output", "total", "inherit_elements").print(path, StandardCharsets.UTF_8))
         {
             for (Record aRecord : dataset) {
@@ -57,7 +64,7 @@ public class CsvRW {
                         aRecord.len_input,
                         aRecord.len_output,
                         aRecord.total,
-                        aRecord.inherit_elements
+                        aRecord.inherit_element
                 );
             }
         } catch (IOException e) {
