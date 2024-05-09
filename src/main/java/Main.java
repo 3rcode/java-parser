@@ -15,7 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Main {
-    private final static Logger logger = Logger.getLogger("extract-inherit-elements");
+    private final static Logger logger = Logger.getLogger("java-parser");
     private static ArrayList<Record> readCsv(String filePath, String task) {
         CsvRW reader = new CsvRW();
         return reader.read(Path.of(filePath), task);
@@ -132,7 +132,8 @@ public class Main {
             for (int i = 0; i < dataset.size(); i++) {
                 dataset.get(i).setInheritElement(inherit_elements.get(i));
             }
-        } else if (task.equals("<method_qualified_names>")) {
+        }
+        else if (task.equals("<method_qualified_names>")) {
             List<String> method_qualified_names = new ArrayList<>(dataset.size());
             for (Record record : ProgressBar.wrap(dataset, "Extracting")) {
                 String projName = record.proj_name;
@@ -140,7 +141,7 @@ public class Main {
                 String filePath = projDir + "/" + record.relative_path;
                 String className = record.class_name;
                 String methodName = record.func_name;
-                method_qualified_names.add(getMethodQualifiedName(projDir, projName, filePath, className, methodName));
+                method_qualified_names.add(getMethodQualifiedName(projName, projDir, filePath, className, methodName));
             }
             for (int i = 0; i < dataset.size(); i++) {
                 dataset.get(i).setMethodQualifiedName(method_qualified_names.get(i));

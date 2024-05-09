@@ -52,23 +52,45 @@ public class CsvRW {
     }
 
     public void write(final Path path, ArrayList<Record> dataset, String task) {
-        try (final CSVPrinter printer = CSVFormat.RFC4180.withHeader("proj_name", "relative_path", "class_name", "func_name", "masked_class", "func_body", "len_input", "len_output", "total", "inherit_elements").print(path, StandardCharsets.UTF_8))
-        {
-            for (Record aRecord : dataset) {
-                printer.printRecord(aRecord.proj_name,
-                        aRecord.relative_path,
-                        aRecord.class_name,
-                        aRecord.func_name,
-                        aRecord.masked_class,
-                        aRecord.func_body,
-                        aRecord.len_input,
-                        aRecord.len_output,
-                        aRecord.total,
-                        aRecord.inherit_element
-                );
+        if (task.equals("<inherit_elements>")) {
+            try (final CSVPrinter printer = CSVFormat.RFC4180.withHeader("proj_name", "relative_path", "class_name", "func_name", "masked_class", "func_body", "len_input", "len_output", "total", "inherit_elements").print(path, StandardCharsets.UTF_8))
+            {
+                for (Record aRecord : dataset) {
+                    printer.printRecord(aRecord.proj_name,
+                            aRecord.relative_path,
+                            aRecord.class_name,
+                            aRecord.func_name,
+                            aRecord.masked_class,
+                            aRecord.func_body,
+                            aRecord.len_input,
+                            aRecord.len_output,
+                            aRecord.total,
+                            aRecord.inherit_element
+                    );
+                }
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "Encounter error while writing csv file");
             }
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Encounter error while writing csv file");
+        } else if (task.equals("<method_qualified_names>")) {
+            try (final CSVPrinter printer = CSVFormat.RFC4180.withHeader("proj_name", "relative_path", "class_name", "func_name", "masked_class", "func_body", "len_input", "len_output", "total", "inherit_elements", "method_qualified_name").print(path, StandardCharsets.UTF_8))
+            {
+                for (Record aRecord : dataset) {
+                    printer.printRecord(aRecord.proj_name,
+                            aRecord.relative_path,
+                            aRecord.class_name,
+                            aRecord.func_name,
+                            aRecord.masked_class,
+                            aRecord.func_body,
+                            aRecord.len_input,
+                            aRecord.len_output,
+                            aRecord.total,
+                            aRecord.inherit_element,
+                            aRecord.method_qualified_name
+                    );
+                }
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "Encounter error while writing csv file");
+            }
         }
     }
 }
