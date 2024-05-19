@@ -39,7 +39,7 @@ public class CsvRW {
                     list.add(aRecord);
                 } else if (task.equals("<method_qualified_names>")) {
                     String inherit_element = record.get("inherit_elements");
-                    Record aRecord = new Record(proj_name, relative_path, class_name, func_name, masked_class, func_body, len_input, len_input, total, inherit_element);
+                    Record aRecord = new Record(proj_name, relative_path, class_name, func_name, masked_class, func_body, len_input, len_output, total, inherit_element);
                     list.add(aRecord);
                 }
 
@@ -56,7 +56,8 @@ public class CsvRW {
             try (final CSVPrinter printer = CSVFormat.RFC4180.withHeader("proj_name", "relative_path", "class_name", "func_name", "masked_class", "func_body", "len_input", "len_output", "total", "inherit_elements").print(path, StandardCharsets.UTF_8))
             {
                 for (Record aRecord : dataset) {
-                    printer.printRecord(aRecord.proj_name,
+                    printer.printRecord(
+                            aRecord.proj_name,
                             aRecord.relative_path,
                             aRecord.class_name,
                             aRecord.func_name,

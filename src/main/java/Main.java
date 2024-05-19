@@ -26,6 +26,7 @@ public class Main {
     }
 
     private static ASTParser newParser(String projectName, String projectDir) {
+        Config.autoConfigure(projectName, projectDir);
         ASTParser parser = ASTParser.newParser(Config.JDT_LEVEL);
         parser.setResolveBindings(true);
         parser.setKind(ASTParser.K_COMPILATION_UNIT);
@@ -44,11 +45,11 @@ public class Main {
         parser.setSource(FileProcessor.read(new File(filePath)).toCharArray());
         CompilationUnit cu = (CompilationUnit) parser.createAST(null);
         int numClass = cu.types().size();
-        TypeDeclaration targetClass;
         if (numClass > 0) {
             if (numClass >= 2) {
                 logger.log(Level.INFO, "The file has more than one class");
             }
+            TypeDeclaration targetClass;
             try {
                 targetClass = (TypeDeclaration) cu.types().get(0);
             } catch (Exception e) {
@@ -82,7 +83,7 @@ public class Main {
     private static String getMethodQualifiedName(String projectName, String projectDir, String filePath, String className, String methodName) {
         ASTParser parser;
         try {
-             parser = newParser(projectName, projectDir);
+            parser = newParser(projectName, projectDir);
         } catch (Exception e) {
             logger.info("Can not configure project");
             return "<no_parser>";
