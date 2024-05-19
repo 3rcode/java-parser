@@ -40,7 +40,12 @@ public class Main {
     }
 
     private static String getInheritElements(String projectName, String projectDir, String filePath) {
-        ASTParser parser = newParser(projectName, projectDir);
+        ASTParser parser;
+        try {
+            parser = newParser(projectName, projectDir);
+        } catch (Exception e) {
+            return "<autoconfigure>";
+        }
         parser.setUnitName(filePath);
         parser.setSource(FileProcessor.read(new File(filePath)).toCharArray());
         CompilationUnit cu = (CompilationUnit) parser.createAST(null);
