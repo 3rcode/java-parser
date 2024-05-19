@@ -138,7 +138,11 @@ public class Main {
                 String projName = record.proj_name;
                 String projDir = baseDir + "/" + projName;
                 String filePath = projDir + "/" + record.relative_path;
-                inherit_elements.add(getInheritElements(projName, projDir, filePath));
+                try {
+                    inherit_elements.add(getInheritElements(projName, projDir, filePath));
+                } catch (Exception e) {
+                    inherit_elements.add("<bug>");
+                }
             }
             for (int i = 0; i < dataset.size(); i++) {
                 dataset.get(i).setInheritElement(inherit_elements.get(i));
