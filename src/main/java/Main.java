@@ -11,19 +11,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+//import java.util.logging.Level;
+//import java.util.logging.Logger;
 
 public class Main {
-    private final static Logger logger = Logger.getLogger("java-parser");
+//    private final static Logger logger = Logger.getLogger("java-parser");
     private static ArrayList<Record> readCsv(String filePath, String task) {
         CsvRW reader = new CsvRW();
         return reader.read(Path.of(filePath), task);
     }
     private static void storeCsv(String filePath, ArrayList<Record> dataset, String task) {
         CsvRW writer = new CsvRW();
-//        writer.write(Path.of(filePath), dataset, task);
-        writer.write(filePath, dataset, task);
+        writer.write(Path.of(filePath), dataset, task);
+//        writer.write(filePath, dataset, task);
     }
 
     private static ASTParser newParser(String projectName, String projectDir) {
@@ -52,36 +52,42 @@ public class Main {
         CompilationUnit cu = (CompilationUnit) parser.createAST(null);
         int numClass = cu.types().size();
         if (numClass > 0) {
+            System.out.println("Checking if the file has more than one class");
             if (numClass >= 2) {
-                logger.log(Level.INFO, "The file has more than one class");
+//                logger.log(Level.INFO, "The file has more than one class");
             }
             TypeDeclaration targetClass;
+            System.out.println("Check if the class is valid");
             try {
                 targetClass = (TypeDeclaration) cu.types().get(0);
             } catch (Exception e) {
-                logger.log(Level.INFO, "The file has enum first");
+//                logger.log(Level.INFO, "The file has enum first");
                 return "<enum>";
             }
+            System.out.println("Check if the class can be resolved");
             ITypeBinding binding = targetClass.resolveBinding();
             if (binding == null) {
-                logger.log(Level.INFO, "The class cannot be resolved binding");
+//                logger.log(Level.INFO, "The class cannot be resolved binding");
                 return "<binding>";
             }
+            System.out.println("Check if the class have super class");
             ITypeBinding superClass = binding.getSuperclass();
             if (superClass == null) {
-                logger.log(Level.INFO, "The class is java.lang.Object class");
+//                logger.log(Level.INFO, "The class is java.lang.Object class");
                 return "<object>";
             }
+            System.out.println("Check if the superclass is valid");
             String superClassName = superClass.getQualifiedName();
             if (superClassName.isEmpty() || superClassName.equals("java.lang.Object") || superClassName.equals("null")) {
                 return "<no_super_class>";
             } else {
+                System.out.println("Getting super class context");
                 String[] methods = Arrays.stream(targetClass.resolveBinding().getSuperclass().getDeclaredMethods()).map(Object::toString).filter(str -> str.contains("public")).toArray(String[]::new);
                 String[] vars = Arrays.stream(targetClass.resolveBinding().getSuperclass().getDeclaredFields()).map(Object::toString).toArray(String[]::new);
                 return "<methods>" + String.join(",", methods) + "<variables>" + String.join(",", vars);
             }
         } else {
-            logger.log(Level.INFO, "The file has no class");
+//            logger.log(Level.INFO, "The file has no class");
             return "<no_class>";
         }
     }
@@ -91,7 +97,7 @@ public class Main {
         try {
             parser = newParser(projectName, projectDir);
         } catch (Exception e) {
-            logger.info("Can not configure project");
+//            logger.info("Can not configure project");
             return "<no_parser>";
         }
         parser.setUnitName(filePath);
@@ -101,7 +107,7 @@ public class Main {
         TypeDeclaration targetClass = null;
         if (numClass > 0) {
             if (numClass >= 2) {
-                logger.log(Level.INFO, "The file has more than one class");
+//                logger.log(Level.INFO, "The file has more than one class");
             }
             for (int i = 0; i < numClass; i++) {
                 if ((((TypeDeclaration) cu.types().get(i)).resolveBinding() != null) &&
@@ -119,7 +125,7 @@ public class Main {
             }
             return "<method_not_found>";
         } else {
-            logger.log(Level.INFO, "The file has no class");
+//            logger.log(Level.INFO, "The file has no class");
             return "<no_class>";
         }
     }
@@ -135,7 +141,11 @@ public class Main {
 
         if (task.equals("<inherit_elements>")) {
             List<String> inherit_elements = new ArrayList<>(dataset.size());
-            for (Record record : ProgressBar.wrap(dataset, "Extracting")) {
+//            for (Record record : ProgressBar.wrap(dataset, "Extracting")) {
+            int counter = 0;
+            for (Record record : dataset) {
+                counter += 1;
+                System.out.println("Current progress: " + counter);
                 String projName = record.proj_name;
                 String projDir = baseDir + "/" + projName;
                 String filePath = projDir + "/" + record.relative_path;
