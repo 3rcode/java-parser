@@ -29,7 +29,11 @@ public class Main {
     }
 
     private static ASTParser newParser(String projectName, String projectDir) {
-        Config.autoConfigure(projectName, projectDir);
+        try {
+            Config.autoConfigure(projectName, projectDir);
+        } catch (Exception e) {
+            System.out.println("Can not config project, use default config");
+        }
         ASTParser parser = ASTParser.newParser(Config.JDT_LEVEL);
         parser.setResolveBindings(true);
         parser.setKind(ASTParser.K_COMPILATION_UNIT);
