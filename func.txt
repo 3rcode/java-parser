@@ -13,38 +13,60 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.playedu.api.cache;
+package xyz.playedu.api.bus;
+
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import xyz.playedu.common.config.PlayEduConfig;
+import xyz.playedu.api.event.UserLoginEvent;
+import xyz.playedu.common.bus.LDAPBus;
+import xyz.playedu.common.domain.User;
 import xyz.playedu.common.exception.ServiceException;
-import xyz.playedu.common.service.RateLimiterService;
-import xyz.playedu.common.util.RedisUtil;
+import xyz.playedu.common.service.*;
+import xyz.playedu.common.util.IpUtil;
+import xyz.playedu.common.util.RequestUtil;
+import xyz.playedu.common.util.ldap.LdapTransformUser;
+
+import java.util.HashMap;
 
 @Component
-public class LoginLimitCache {
+@Slf4j
+public class LoginBus {
 
-    @Autowired private RateLimiterService rateLimiterService;
+    @Autowired private FrontendAuthService authService;
 
-    @Autowired private PlayEduConfig playEduConfig;
+    @Autowired private AppConfigService appConfigService;
 
-    public void check(String email) throws ServiceException {
-        String limitKey = cacheKey(email);
-        Long reqCount = rateLimiterService.current(limitKey, 600L);
-        if (reqCount >= 10 && !playEduConfig.getTesting()) {
-            Long exp = RedisUtil.ttlWithoutPrefix(limitKey);
-            String msg = String.format("您的账号已被锁定，请%s后重试", exp > 60 ? exp / 60 + "分钟" : exp + "秒");
-            throw new ServiceException(msg);
-        }
+    @Autowired private LDAPBus ldapBus;
+
+    @Autowired private ApplicationContext ctx;
+
+    public HashMap<String, Object> tokenByUser(User user) {
+        String token = authService.loginUsingId(user.getId(), RequestUtil.url());
+
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("token", token);
+
+        ctx.publishEvent(
+                new UserLoginEvent(
+                        this,
+                        user.getId(),
+                        user.getEmail(),
+                        token,
+                        IpUtil.getIpAddress(),
+                        RequestUtil.ua()));
+
+        return data;
     }
 
-    public void destroy(String email) {
-        RedisUtil.del(cacheKey(email));
-    }
-
-    private String cacheKey(String email) {
-        return "login-limit:" + email;
+    @Transactional
+    public HashMap<String, Object> tokenByLdapTransformUser(LdapTransformUser ldapTransformUser)
+            throws ServiceException {
+        User user = ldapBus.singleUserSync(ldapTransformUser, appConfigService.defaultAvatar());
+        return tokenByUser(user);
     }
 }

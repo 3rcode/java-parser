@@ -1,31 +1,18 @@
 import flute.config.Config;
-import flute.utils.file_processing.FileProcessor;
-
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.*;
-import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
-import org.eclipse.jface.text.Document;
-import org.eclipse.text.edits.TextEdit;
 
-import com.google.gson.*;
 
-import java.io.File;
-import java.io.OutputStreamWriter;
-import java.io.FileOutputStream;
+
 import java.io.IOException;
-import java.io.Writer;
 import java.nio.file.*;
 
-import java.util.Hashtable;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Main {
     public static CompilationUnit parse(String source) {
@@ -144,7 +131,9 @@ public class Main {
                 // Filter method name not in target method
                 LinkedHashSet<String> methodNamesInTargetMethod = new LinkedHashSet<>();
                 for (String name : methodNames) {
-                    if (methodRaw.contains('.' + name)) {
+                    Pattern pattern = Pattern.compile("\\." + name + "\\(");
+                    Matcher matcher = pattern.matcher(methodRaw);
+                    if (matcher.find()) {
                         methodNamesInTargetMethod.add(name);
                     }
                 }
@@ -152,7 +141,9 @@ public class Main {
                 LinkedHashSet<String> fieldNamesInTargetMethod = new LinkedHashSet<>();
                 LinkedHashSet<String> typeNamesInTargetMethod = new LinkedHashSet<>();
                 for (Map.Entry<String, String> mapElement : variables.entrySet()) {
-                    if (methodRaw.contains(mapElement.getKey())) {
+                    Pattern pattern = Pattern.compile("\\b" + mapElement.getKey() + "\\b");
+                    Matcher matcher = pattern.matcher(methodRaw);
+                    if (matcher.find()) {
                         fieldNamesInTargetMethod.add(mapElement.getKey());
                         typeNamesInTargetMethod.add(mapElement.getValue());
                     }
@@ -165,9 +156,9 @@ public class Main {
                 System.out.println("Method not found: " + methodName);
             }
         } catch (IOException e) {
-            System.out.println("Can not read file");
+            System.out.println(e.getMessage());
         } catch (Exception e) {
-
+            System.out.println(e.getMessage());
         }    
     }
 }
