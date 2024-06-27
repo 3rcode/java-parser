@@ -1,5 +1,6 @@
 import flute.config.Config;
 import flute.utils.file_processing.FileProcessor;
+
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.*;
 
@@ -7,9 +8,9 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Hashtable;
 
-
 public class Main {
-    private static String parseFile(String projectName, String projectDir, String filePath, String className) {
+
+    private static CompilationUnit createCU(String projectName, String projectDir, String filePath) {
         Config.autoConfigure(projectName, projectDir);
         ASTParser parser = ASTParser.newParser(Config.JDT_LEVEL);
         parser.setResolveBindings(true);
@@ -23,57 +24,53 @@ public class Main {
         parser.setUnitName(filePath);
         parser.setSource(FileProcessor.read(new File(filePath)).toCharArray());
         CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-        int numClass = cu.types().size();
-        TypeDeclaration targetClass = null;
-        try {
-            if (numClass > 0) {
-                for (int i = 0; i < numClass; i++) {
-                    TypeDeclaration type = (TypeDeclaration) cu.types().get(i);
-                    if (numClass == 1 || type.getName().toString().equals(className)) {
-                        targetClass = type;
-                        break;
-                    }
-                }
-                if (targetClass == null) {
-                    targetClass = (TypeDeclaration) cu.types().get(0);
-                }
-            } else {
-                return "<no_class>";
-            }
-        } catch (Exception e) {
-            return "<enum>";
-        }
-        ITypeBinding binding = targetClass.resolveBinding();
-        if (binding == null) {
-            return "<binding>";
-        }
-        ITypeBinding superClass = binding.getSuperclass();
-        if (superClass == null) {
-            return "<object>";
-        }
-        String superClassName = superClass.getQualifiedName();
-        if (superClassName.isEmpty() || superClassName.equals("java.lang.Object") || superClassName.equals("null")) {
-            return "<no_super_class>";
-        } else {
-            String[] methods = Arrays.stream(targetClass.resolveBinding().getSuperclass().getDeclaredMethods()).map(Object::toString).filter(str -> str.contains("public")).toArray(String[]::new);
-            String[] vars = Arrays.stream(targetClass.resolveBinding().getSuperclass().getDeclaredFields()).map(Object::toString).toArray(String[]::new);
-            return "<methods>" + String.join(",", methods) + "<variables>" + String.join(",", vars);
-        }
+        return cu;
     }
 
     public static void main(String[] args) {
         Config.JAVAFX_DIR = "/home/lvdthieu/Token";
         String baseDir = args[0];
-        String projName = args[1];
+        String projectName = args[1];
         String relativePath = args[2];
         String className = args[3];
-        String projDir = baseDir + "/" + projName;
-        String filePath = projDir + "/" + relativePath;
+        String projectDir = baseDir + "/" + projectName;
+        String filePath = projectDir + "/" + relativePath;
         try {
-            System.out.println(parseFile(projName, projDir, filePath, className));
+            CompilationUnit cu = createCU(projectName, projectDir, filePath);
+            int numClass = cu.types().size();
+            if (numClass == 0) {
+                System.out.println("<no_class>");
+                return;
+            }
+            AbstractTypeDeclaration targetClass = null;
+            for (int i = 0; i < numClass; i++) {
+                AbstractTypeDeclaration type = (AbstractTypeDeclaration) cu.types().get(i);
+                System.out.println(type.getName().toString());
+                if (type.getName().toString().equals(className)) {
+                    targetClass = type;
+                }
+            }
+            if (targetClass == null) {
+                System.out.println("<cant_find_class>");
+                return;
+            }
+            if (targetClass instanceof TypeDeclaration) {
+                ITypeBinding binding = ((TypeDeclaration) targetClass).resolveBinding();
+                if (binding == null) {
+                    System.out.println("<cant_resolve_binding>");
+                    return;
+                } 
+                ITypeBinding superClass = binding.getSuperclass();
+                if (superClass == null) {
+                    System.out.println("<super_class_null>");
+                    return;
+                }
+                System.out.println(superClass.getQualifiedName());
+            } else {
+                System.out.println("<no_super_class>");
+            }
         } catch (Exception e) {
             System.out.println("<encounter_error>");
         }
     }
 }
-
