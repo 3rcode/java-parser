@@ -45,7 +45,6 @@ public class Main {
             AbstractTypeDeclaration targetClass = null;
             for (int i = 0; i < numClass; i++) {
                 AbstractTypeDeclaration type = (AbstractTypeDeclaration) cu.types().get(i);
-                System.out.println(type.getName().toString());
                 if (type.getName().toString().equals(className)) {
                     targetClass = type;
                 }
@@ -59,13 +58,18 @@ public class Main {
                 if (binding == null) {
                     System.out.println("<cant_resolve_binding>");
                     return;
-                } 
+                }
                 ITypeBinding superClass = binding.getSuperclass();
                 if (superClass == null) {
                     System.out.println("<super_class_null>");
                     return;
                 }
-                System.out.println(superClass.getQualifiedName());
+                String superClassQualifiedName = superClass.getQualifiedName();
+                if (superClassQualifiedName.equals("java.lang.Object")) {
+                    System.out.println("<no_super_class>");
+                } else {
+                    System.out.println(superClassQualifiedName);
+                }
             } else {
                 System.out.println("<no_super_class>");
             }
