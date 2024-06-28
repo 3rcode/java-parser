@@ -1,5 +1,6 @@
 import flute.config.Config;
 import flute.utils.file_processing.FileProcessor;
+import me.tongfei.progressbar.ProgressBar;
 
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.*;
@@ -178,7 +179,13 @@ public class Main {
                 }
                 modifiers = modifiers.replaceAll("\\s+$", "");
                 typeInfo.addProperty("modifiers", modifiers);
-            
+                ITypeBinding binding = type.resolveBinding();
+                if (binding == null) {
+                    typeInfo.addProperty("qualified_name", "<cant_resolve_binding>");
+                } else {
+                    typeInfo.addProperty("qualified_name", binding.getQualifiedName());
+                }
+
                 // Get the superclass name
                 try {
                     TypeDeclaration classType = (TypeDeclaration) type;
@@ -276,19 +283,19 @@ public class Main {
                 }
             }
         }
-        try (Writer writer = new OutputStreamWriter(new FileOutputStream("type.json"), "UTF-8")) {
+        try (Writer writer = new OutputStreamWriter(new FileOutputStream(projectName + "type.json"), "UTF-8")) {
             Gson gson = new GsonBuilder().create();
             gson.toJson(types, writer);
         } catch (Exception e) {
             logger.severe(e.getMessage());
         }
-        try (Writer writer = new OutputStreamWriter(new FileOutputStream("fields.json"), "UTF-8")) {
+        try (Writer writer = new OutputStreamWriter(new FileOutputStream(projectName + "fields.json"), "UTF-8")) {
             Gson gson = new GsonBuilder().create();
             gson.toJson(fields, writer);
         } catch (Exception e) {
             logger.severe(e.getMessage());
         }
-        try (Writer writer = new OutputStreamWriter(new FileOutputStream("methods.json"), "UTF-8")) {
+        try (Writer writer = new OutputStreamWriter(new FileOutputStream(projectName + "methods.json"), "UTF-8")) {
             Gson gson = new GsonBuilder().create();
             gson.toJson(methods, writer);
         } catch (Exception e) {
